@@ -32,8 +32,6 @@ public class MileageCalculatorNoConversion extends Application {
     private String altCapacity = "Liters";
     private String altResult = "L/100KM";
     
-    private String [] comboButton = {defaultResult, altResult};
-    
     // create UI components split by type
     private Button btnCalc = new Button("Calculate");
     private Button btnReset = new Button("Reset");
@@ -49,8 +47,8 @@ public class MileageCalculatorNoConversion extends Application {
     
    // private RadioButton rbMPG = new RadioButton(defaultResult);
   //  private RadioButton rbKPL = new RadioButton(altResult);
-    
-    private ComboBox<String> cbo = new ComboBox<>();
+    private ObservableList<String> items = FXCollections.observableArrayList(defaultResult, altResult);
+    private ComboBox<String> cbo = new ComboBox<>(items);
  //   private ToggleGroup tgConv = new ToggleGroup();
     
     private GridPane mainPane = new GridPane();
@@ -65,20 +63,12 @@ public class MileageCalculatorNoConversion extends Application {
         tfCapacity.setMaxWidth(txtWidth);
         tfResult.setMaxWidth(txtWidth);
         tfResult.setEditable(false);
- //       rbMPG.setSelected(true);
-        changeLabels(0);
+
         // create a main grid pane to hold items
         mainPane.setPadding(new Insets(10.0));
         mainPane.setHgap(txtWidth/2.0);
         mainPane.setVgap(txtWidth/12.0);
-        
-        
-        
-        cbo.setValue("MPG");
-        
-        ObservableList<String> items
-        = FXCollections.observableArrayList(comboButton);
-        cbo.getItems().addAll(items);
+       
         
         // add items to mainPane
         mainPane.add(lblEffType, 0, 0);
@@ -99,7 +89,7 @@ public class MileageCalculatorNoConversion extends Application {
         tfCapacity.setOnAction(e -> calcMileage(items.indexOf(cbo.getValue())));
         tfResult.setOnAction(e -> calcMileage(items.indexOf(cbo.getValue())));
         cbo.setOnAction(e -> changeLabels(items.indexOf(cbo.getValue())));
-       // rbMPG.setOnAction(e -> changeLabels());     
+    
         btnReset.setOnAction(e -> resetForm());
         
         // create a scene and place it in the stage
@@ -119,6 +109,9 @@ public class MileageCalculatorNoConversion extends Application {
      * This needs to be separate to avoid converting when
      * the conversion is not necessary
      */
+	private void convert(){
+		
+	}
     private void changeLabels(int index) {
     	// distinguish between L/100KM and MPG
     	if (comboButton[index].equals(altResult) ) {
