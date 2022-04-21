@@ -1,12 +1,14 @@
 /**
 * File: csci1302/ch16/MileageCalculator.java
- * Package: ch16
- * @author Tierra Anthony Hannah Hammonds 
- * Created on: Apr 12, 2022
- * Last Modified: Apr 18, 2022
- * Description:  Updating Mileage Calc tasks with Combobox and updated handlers 
+ * Package: projectPracticeE2;
+ * @author Tierra Anthony 
+ * Last Modified: Apr 20, 2022
+ * Description:  Adding functionality to have any existing values that are entered in
+ the GUI to auto-convert to the appropriate values when the user changes the type of fuel
+ efficiency they would like to calculate.
+ * Created on: Apr 20, 2022
  */
-package ch16;
+package projectPracticeE2;
 //https://github.com/tropichannah/EP4.git
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -44,19 +46,14 @@ public class MileageCalculatorNoConversion extends Application {
     private TextField tfDistance = new TextField(defaultEntry);
     private TextField tfCapacity = new TextField(defaultEntry);
     private TextField tfResult = new TextField(defaultCalc);
-    
-   // private RadioButton rbMPG = new RadioButton(defaultResult);
-  //  private RadioButton rbKPL = new RadioButton(altResult);
+   
+//make an Observable list and store the items in the Combobox
     private ObservableList<String> items = FXCollections.observableArrayList(defaultResult, altResult);
     private ComboBox<String> cbo = new ComboBox<>(items);
- //   private ToggleGroup tgConv = new ToggleGroup();
     
     private GridPane mainPane = new GridPane();
     @Override
-    public void start(Stage primaryStage) {   	
-    	// set toggle group for RadioButtons
-    //	rbMPG.setToggleGroup(tgConv);
-   // 	rbKPL.setToggleGroup(tgConv);
+    public void start(Stage primaryStage) {   
     	
         // set preferences for UI components
         tfDistance.setMaxWidth(txtWidth);
@@ -69,10 +66,11 @@ public class MileageCalculatorNoConversion extends Application {
         mainPane.setHgap(txtWidth/2.0);
         mainPane.setVgap(txtWidth/12.0);
        
-        
+	// add a selectionmodel
+        cbo.getSelectionModel().selectFirst(); 
+	    
         // add items to mainPane
         mainPane.add(lblEffType, 0, 0);
-     //   mainPane.add(rbMPG, 0, 1);
         mainPane.add(cbo, 1, 1);
         mainPane.add(lblDistance, 0, 2);
         mainPane.add(tfDistance, 1, 2);
@@ -84,13 +82,15 @@ public class MileageCalculatorNoConversion extends Application {
         mainPane.add(btnCalc, 1, 5);
         
         // register action handlers
-        btnCalc.setOnAction(e -> calcMileage(items.indexOf(cbo.getValue())));
-        tfDistance.setOnAction(e -> calcMileage(items.indexOf(cbo.getValue())));
-        tfCapacity.setOnAction(e -> calcMileage(items.indexOf(cbo.getValue())));
-        tfResult.setOnAction(e -> calcMileage(items.indexOf(cbo.getValue())));
-        cbo.setOnAction(e -> changeLabels(items.indexOf(cbo.getValue())));
-    
+          btnCalc.setOnAction(e -> calcMileage());
+        tfDistance.setOnAction(e -> calcMileage());
+        tfCapacity.setOnAction(e -> calcMileage());
+        tfResult.setOnAction(e -> calcMileage());
+        cbo.setOnAction(e -> changeLabels());    
         btnReset.setOnAction(e -> resetForm());
+       //create listner handler for the convert method
+        cbo.valueProperty().addListener(ov -> convert());
+ 
         
         // create a scene and place it in the stage
         Scene scene = new Scene(mainPane); 
@@ -109,12 +109,33 @@ public class MileageCalculatorNoConversion extends Application {
      * This needs to be separate to avoid converting when
      * the conversion is not necessary
      */
+	//create handler method- for conversion
 	private void convert(){
-		
+		double distance = 0.0, capacity = 0.0;
+    	 // make sure to get numeric values only
+    	  if (tfCapacity.getText() != null && !tfCapacity.getText().isEmpty()
+          		&& tfDistance.getText() != null && !tfDistance.getText().isEmpty()) {
+    		  distance = Double.parseDouble(tfDistance.getText());
+              capacity = Double.parseDouble(tfCapacity.getText());
+    	  }
+		// condition to convert the distance and capacity and call the calcMilege method for update
+		 if (cbo.getValue().equals(altResult)) {
+    		  distance *= 1.60934;
+    		  capacity *= 3.78541;
+    		  tfCapacity.setText(String.format("%.2f", capacity));
+    		  tfDistance.setText(String.format("%.2f", distance));
+    		  calcMileage();
+    	  }else {
+    		  distance *= 0.621371;
+    		  capacity *= 0.264172;
+    		  tfCapacity.setText(String.format("%.2f", capacity));
+    		  tfDistance.setText(String.format("%.2f", distance));
+    		  calcMileage(); 
+    	  }
 	}
-    private void changeLabels(int index) {
+    private void changeLabels() {
     	// distinguish between L/100KM and MPG
-    	if (comboButton[index].equals(altResult) ) {
+    	if (cbo.getValue().equals(altResult) ) {
         	// update labels
         	lblCapacity.setText(altCapacity);
         	lblDistance.setText(altMileage);
@@ -130,7 +151,7 @@ public class MileageCalculatorNoConversion extends Application {
     /**
      * Calculate expenses based on entered figures
      */
-    private void calcMileage(int index) {       
+    private void calcMileage() {       
     	// set default values
         double distance = 0.0, capacity = 0.0;
         
@@ -143,7 +164,7 @@ public class MileageCalculatorNoConversion extends Application {
 
         // check for type of calculation
         double result = 0.0;
-        if (comboButton[index].equals(altResult)) {
+	    if (cbo.getValue().equals(altResult)) {
         	// liters / 100KM
         	result = (distance != 0) ? capacity/(distance/100.0) : 0;
         } else {
